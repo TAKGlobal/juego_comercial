@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Robot Espacial TAK</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            touch-action: manipulation;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: #000 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"><defs><pattern id="stars" patternUnits="userSpaceOnUse" width="500" height="500"><circle cx="50" cy="30" r="1" fill="white"/><circle cx="150" cy="80" r="1.5" fill="white"/><circle cx="300" cy="150" r="1" fill="white"/><circle cx="400" cy="20" r="2" fill="white"/><circle cx="450" cy="100" r="1" fill="white"/><circle cx="100" cy="200" r="1.5" fill="white"/><circle cx="250" cy="250" r="1" fill="white"/><circle cx="350" cy="300" r="2" fill="white"/><circle cx="50" cy="350" r="1" fill="white"/><circle cx="200" cy="400" r="1.5" fill="white"/><circle cx="400" cy="450" r="1" fill="white"/></pattern></defs><rect width="100%" height="100%" fill="black"/><rect width="100%" height="100%" fill="url(%23stars)"/></svg>');
+            overflow: hidden;
+        }
+        #robot {
+            position: absolute;
+            width: 60px;
+            height: 75px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 100"><defs><linearGradient id="robotBody" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%231E88E5"/><stop offset="100%" stop-color="%230D47A1"/></linearGradient><linearGradient id="robotAccent" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="%23FFC107"/><stop offset="100%" stop-color="%23FF9800"/></linearGradient><radialGradient id="glassGradient" cx="40%" cy="40%" r="50%"><stop offset="0%" stop-color="%2360a5fa"/><stop offset="100%" stop-color="%231E40AF" stop-opacity="0.7"/></radialGradient></defs><rect x="20" y="10" width="40" height="60" fill="url(%23robotBody)" rx="5" stroke="%2390c8f8" stroke-width="2"/><rect x="10" y="30" width="15" height="30" fill="%23BFDBFE" rx="3" stroke="%2390c8f8" stroke-width="1"/><rect x="55" y="30" width="15" height="30" fill="%23BFDBFE" rx="3" stroke="%2390c8f8" stroke-width="1"/><circle cx="30" cy="25" r="7" fill="url(%23glassGradient)"/><circle cx="50" cy="25" r="7" fill="url(%23glassGradient)"/><rect x="35" y="70" width="10" height="20" fill="url(%23robotBody)"/><rect x="30" y="90" width="5" height="10" fill="%2390c8f8"/><rect x="45" y="90" width="5" height="10" fill="%2390c8f8"/><rect x="25" y="15" width="30" height="5" fill="url(%23robotAccent)"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 10;
+            transition: transform 0.1s;
+        }
+        .obstacle {
+            position: absolute;
+            width: 90px;
+            height: 70px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90"><defs><filter id="cloudShadow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter></defs><path d="M20,45 Q40,5 80,20 Q110,15 100,50 Q120,70 90,75 Q100,95 60,85 Q30,100 25,70 Q5,60 20,45" fill="%237089b8" filter="url(%23cloudShadow)" opacity="0.9"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 5;
+        }
+        .database {
+            position: absolute;
+            width: 60px;
+            height: 90px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 110"><defs><linearGradient id="dbGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%232196F3"/><stop offset="100%" stop-color="%230d47a1"/></linearGradient></defs><ellipse cx="35" cy="20" rx="30" ry="15" fill="url(%23dbGradient)"/><rect x="5" y="20" width="60" height="70" fill="url(%23dbGradient)"/><ellipse cx="35" cy="90" rx="30" ry="15" fill="url(%23dbGradient)"/><rect x="15" y="30" width="40" height="50" fill="%23E3F2FD" opacity="0.7"/><rect x="20" y="40" width="30" height="5" fill="%232196F3"/><rect x="20" y="55" width="30" height="5" fill="%232196F3"/><rect x="20" y="70" width="30" height="5" fill="%232196F3"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 5;
+        }
+        .repair-station {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="stationGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%234CAF50"/><stop offset="100%" stop-color="%232E7D32"/></linearGradient></defs><polygon points="50,5 90,30 90,70 50,95 10,70 10,30" fill="url(%23stationGradient)" stroke="%2381C784" stroke-width="2"/><polygon points="50,25 75,40 75,60 50,75 25,60 25,40" fill="%23A5D6A7" opacity="0.8"/><circle cx="50" cy="50" r="15" fill="%2381C784"/><path d="M50,35 L60,50 L50,65 L40,50 Z" fill="white"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 7;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+        .enemy-robot {
+            position: absolute;
+            width: 50px;
+            height: 65px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 80"><rect x="15" y="10" width="30" height="50" fill="%23F44336"/><rect x="10" y="30" width="10" height="20" fill="%23FFCDD2"/><rect x="40" y="30" width="10" height="20" fill="%23FFCDD2"/><circle cx="25" cy="20" r="5" fill="%23FFEB3B"/><circle cx="35" cy="20" r="5" fill="%23FFEB3B"/><rect x="25" y="60" width="10" height="15" fill="%23F44336"/></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 6;
+        }
+        .fruit {
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="18" fill="%23FFEB3B"/><text x="20" y="25" font-family="Arial" font-size="14" font-weight="bold" text-anchor="middle" fill="%23BF360C">TAK</text></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 8;
+            animation: float 2s infinite ease-in-out;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        #score-panel {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px;
+            border-radius: 8px;
+            z-index: 20;
+            font-size: 12px;
+            width: 150px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        #fuel-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 4px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        #fuel-level {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(to right, #FF5722, #FFC107);
+            transition: width 0.3s;
+            box-shadow: 0 0 3px #FF9800;
+        }
+        #repair-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            margin-top: 4px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        #repair-level {
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(to right, #4CAF50, #8BC34A);
+            transition: width 0.3s;
+            box-shadow: 0 0 3px #4CAF50;
+        }
+        #game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 30px 40px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            z-index: 30;
+            width: 80%;
+            max-width: 350px;
+            border: 2px solid #FF5722;
+            box-shadow: 0 0 20px rgba(255, 87, 34, 0.5);
+        }
+        #victory-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 30px 40px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            z-index: 30;
+            width: 80%;
+            max-width: 400px;
+            border: 2px solid #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+        .trophy {
+            width: 100px;
+            height: 100px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="trophyGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="%23FFD700"/><stop offset="100%" stop-color="%23FF9800"/></linearGradient><filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5" result="blur"/><feComposite in="SourceGraphic" in2="blur" operator="over"/></filter></defs><path d="M30,20 L30,40 L20,40 L20,60 L30,60 L30,80 L70,80 L70,60 L80,60 L80,40 L70,40 L70,20 Z" fill="url(%23trophyGradient)" filter="url(%23glow)"/><circle cx="50" cy="30" r="15" fill="url(%23trophyGradient)" filter="url(%23glow)"/><path d="M40,80 L40,90 L60,90 L60,80" fill="%23FFC107"/><text x="50" y="55" font-family="Arial" font-size="20" font-weight="bold" text-anchor="middle" fill="%23800000">TAK</text></svg>');
+            background-size: contain;
+            background-repeat: no-repeat;
+            margin: 0 auto 20px;
+            animation: pulse 1.5s infinite;
+        }
+        #restart-btn, #victory-restart-btn {
+            background: linear-gradient(to right, #2196F3, #64B5F6);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            margin-top: 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        #restart-btn:hover, #victory-restart-btn:hover {
+            background: linear-gradient(to right, #1976D2, #42A5F5);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        #controls-info {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 20;
+        }
+        #repair-alert {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 152, 0, 0.9);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+            z-index: 25;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(255, 152, 0, 0.5);
+            width: 80%;
+            max-width: 300px;
+        }
+        #speech-bubble {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            color: #333;
+            padding: 8px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+            z-index: 15;
+            max-width: 200px;
+            text-align: center;
+        }
+        #speech-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: white transparent transparent;
+        }
+        .explosion {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><radialGradient id="explosionGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="%23FF5722"/><stop offset="50%" stop-color="%23FF9800"/><stop offset="100%" stop-color="%23FFC107" stop-opacity="0"/></radialGradient></defs><circle cx="50" cy="50" r="45" fill="url(%23explosionGrad)"/></svg>');
+            background-size: contain;
+            z-index: 15;
+            animation: explode 0.8s forwards;
+        }
+        @keyframes explode {
+            0% { transform: scale(0.1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        #sound-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 20;
+        }
+        /* Controles táctiles */
+        #touch-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 20;
+            display: none;
+        }
+        .touch-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 24px;
+            margin: 10px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        #touch-arrows {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 5px;
+        }
+        .touch-up {
+            grid-column: 2;
+            grid-row: 1;
+        }
+        .touch-left {
+            grid-column: 1;
+            grid-row: 2;
+        }
+        .touch-right {
+            grid-column: 3;
+            grid-row: 2;
+        }
+        .touch-down {
+            grid-column: 2;
+            grid-row: 3;
+        }
+        @media (max-width: 768px) {
+            #robot {
+                width: 50px;
+                height: 65px;
+            }
+            .obstacle {
+                width: 70px;
+                height: 55px;
+            }
+            .database {
+                width: 50px;
+                height: 75px;
+            }
+            .repair-station {
+                width: 70px;
+                height: 70px;
+            }
+            .enemy-robot {
+                width: 40px;
+                height: 55px;
+            }
+            .fruit {
+                width: 30px;
+                height: 30px;
+            }
+            #controls-info {
+                display: none;
+            }
+            #touch-controls {
+                display: block;
+            }
+            #score-panel {
+                font-size: 11px;
+                width: 130px;
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="robot">
+            <div id="speech-bubble"></div>
+        </div>
+        <div id="score-panel">
+            <div>Puntuación: <span id="score">0</span></div>
+            <div>Combustible TAK:</div>
+            <div id="fuel-bar"><div id="fuel-level"></div></div>
+            <div>Reparación:</div>
+            <div id="repair-bar"><div id="repair-level"></div></div>
+        </div>
+        <button id="sound-toggle">🔊 Sonido ON</button>
+        <div id="controls-info">
+            Controles: Flechas ← → para avanzar/retroceder, Flechas ↑ ↓ para subir/bajar
+        </div>
+        <div id="repair-alert">
+            ¡Necesitas reparación! Busca una estación espacial (verde)
+        </div>
+        <div id="game-over">
+            <h2 style="color: #FF5722; margin-bottom: 20px;">¡Misión Fallida!</h2>
+            <p style="font-size: 18px;">Puntuación final: <span id="final-score" style="color: #FFEB3B; font-weight: bold;">0</span></p>
+            <button id="restart-btn">Nueva Misión</button>
+        </div>
+        <div id="victory-screen">
+            <div class="trophy"></div>
+            <h2 style="color: #4CAF50; margin-bottom: 20px;">¡Misión Cumplida!</h2>
+            <p style="font-size: 18px; margin-bottom: 10px;">Puntuación final: <span id="victory-score" style="color: #FFEB3B; font-weight: bold;">300</span></p>
+            <p style="font-size: 16px; margin-bottom: 20px;">Felicitaciones con TAK - Tech and Knowledge puedes llegar a la meta en la que tus ideas y optimizaciones de negocio son ejecutadas</p>
+            <button id="victory-restart-btn">Nueva Misión</button>
+        </div>
+        
+        <!-- Controles táctiles para móviles -->
+        <div id="touch-controls">
+            <div id="touch-arrows">
+                <div class="touch-btn touch-up" id="touch-up">↑</div>
+                <div class="touch-btn touch-left" id="touch-left">←</div>
+                <div class="touch-btn touch-right" id="touch-right">→</div>
+                <div class="touch-btn touch-down" id="touch-down">↓</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio elements -->
+    <audio id="engine-sound" loop>
+        <source src="https://assets.mixkit.co/active_preview/sounds/mixkit-spaceship-engines-1711.wav" type="audio/wav">
+    </audio>
+    <audio id="crash-sound">
+        <source src="https://assets.mixkit.co/active_preview/sounds/mixkit-explosion-impact-1684.wav" type="audio/wav">
+    </audio>
+    <audio id="repair-sound">
+        <source src="https://assets.mixkit.co/active_preview/sounds/mixkit-achievement-bell-600.wav" type="audio/wav">
+    </audio>
+    <audio id="space-ambience" loop>
+        <source src="https://assets.mixkit.co/active_preview/sounds/mixkit-space-ambience-1683.wav" type="audio/wav">
+    </audio>
+    <audio id="fuel-sound">
+        <source src="https://assets.mixkit.co/active_preview/sounds/mixkit-positive-interface-beep-221.wav" type="audio/wav">
+    </audio>
+    <audio id="voice-excellent">
+        <source src="https://assets.mixkit.co/active_preview/sounds/mixkit-robot-voice-says-excellent-2740.wav" type="audio/wav">
+    </audio>
+    <audio id="voice-good-service">
+        <source src="https://assets.mixkit.co/active_preview/sounds/mixkit-robot-voice-says-good-service-2741.wav" type="audio/wav">
+    </audio>
+    <audio id="victory-sound">
+        <source src="https://assets.mixkit.co/active_preview/sounds/mixkit-achievement-bell-600.wav" type="audio/wav">
+    </audio>
+
+    <script>
+        // Variables del juego
+        const gameContainer = document.getElementById('game-container');
+        const robot = document.getElementById('robot');
+        const scoreElement = document.getElementById('score');
+        const fuelLevel = document.getElementById('fuel-level');
+        const repairLevel = document.getElementById('repair-level');
+        const gameOverScreen = document.getElementById('game-over');
+        const finalScoreElement = document.getElementById('final-score');
+        const restartBtn = document.getElementById('restart-btn');
+        const repairAlert = document.getElementById('repair-alert');
+        const speechBubble = document.getElementById('speech-bubble');
+        const soundToggle = document.getElementById('sound-toggle');
+        const victoryScreen = document.getElementById('victory-screen');
+        const victoryScoreElement = document.getElementById('victory-score');
+        const victoryRestartBtn = document.getElementById('victory-restart-btn');
+        
+        // Controles táctiles
+        const touchUp = document.getElementById('touch-up');
+        const touchLeft = document.getElementById('touch-left');
+        const touchRight = document.getElementById('touch-right');
+        const touchDown = document.getElementById('touch-down');
+
+        // Elementos de audio
+        const engineSound = document.getElementById('engine-sound');
+        const crashSound = document.getElementById('crash-sound');
+        const repairSound = document.getElementById('repair-sound');
+        const spaceAmbience = document.getElementById('space-ambience');
+        const fuelSound = document.getElementById('fuel-sound');
+        const voiceExcellent = document.getElementById('voice-excellent');
+        const voiceGoodService = document.getElementById('voice-good-service');
+        const victorySound = document.getElementById('victory-sound');
+
+        let score = 0;
+        let fuel = 100;
+        let repair = 100;
+        let gameSpeed = 2;
+        let obstacles = [];
+        let databases = [];
+        let repairStations = [];
+        let enemyRobots = [];
+        let fruits = [];
+        let isGameOver = false;
+        let isRepairing = false;
+        let needsRepair = false;
+        let gameInterval;
+        let fuelDecreaseInterval;
+        let repairDecreaseInterval;
+        let keysPressed = {};
+        let soundEnabled = true;
+        let hasWon = false;
+        let isTouchDevice = false;
+
+        // Tamaños para colisiones
+        const robotWidth = 60;
+        const robotHeight = 75;
+        const obstacleWidth = 90;
+        const obstacleHeight = 70;
+        const databaseWidth = 60;
+        const databaseHeight = 90;
+        const repairStationSize = 80;
+        const enemyRobotWidth = 50;
+        const enemyRobotHeight = 65;
+        const fruitSize = 30;
+
+        // Posición inicial del robot
+        let robotX = 100;
+        let robotY = window.innerHeight / 2;
+        robot.style.left = robotX + 'px';
+        robot.style.top = robotY + 'px';
+
+        // Detectar dispositivo táctil
+        function detectTouchDevice() {
+            return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+        }
+
+        isTouchDevice = detectTouchDevice();
+
+        // Mostrar mensaje del robot
+        function showSpeech(message, duration = 2000) {
+            speechBubble.textContent = message;
+            speechBubble.style.opacity = '1';
+            setTimeout(() => {
+                speechBubble.style.opacity = '0';
+            }, duration);
+        }
+
+        // Control de sonido
+        soundToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundToggle.textContent = soundEnabled ? '🔊 Sonido ON' : '🔇 Sonido OFF';
+            
+            if (soundEnabled) {
+                spaceAmbience.play();
+                if (keysPressed['ArrowLeft'] || keysPressed['ArrowRight'] || 
+                    keysPressed['ArrowUp'] || keysPressed['ArrowDown']) {
+                    engineSound.play();
+                }
+            } else {
+                spaceAmbience.pause();
+                engineSound.pause();
+            }
+        });
+
+        // Manejo de teclado
+        window.addEventListener('keydown', (e) => {
+            keysPressed[e.key] = true;
+            
+            if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight' || 
+                 e.key === 'ArrowUp' || e.key === 'ArrowDown') && 
+                soundEnabled && !isRepairing && !hasWon) {
+                engineSound.play();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keysPressed[e.key] = false;
+            
+            if (!keysPressed['ArrowLeft'] && !keysPressed['ArrowRight'] && 
+                !keysPressed['ArrowUp'] && !keysPressed['ArrowDown']) {
+                engineSound.pause();
+            }
+        });
+
+        // Controles táctiles
+        function setupTouchControls() {
+            const handleTouchStart = (direction) => {
+                return () => {
+                    keysPressed[direction] = true;
+                    if (soundEnabled && !isRepairing && !hasWon) {
+                        engineSound.play();
+                    }
+                };
+            };
+
+            const handleTouchEnd = (direction) => {
+                return () => {
+                    keysPressed[direction] = false;
+                    if (!keysPressed['ArrowLeft'] && !keysPressed['ArrowRight'] && 
+                        !keysPressed['ArrowUp'] && !keysPressed['ArrowDown']) {
+                        engineSound.pause();
+                    }
+                };
+            };
+
+            touchUp.addEventListener('touchstart', handleTouchStart('ArrowUp'));
+            touchUp.addEventListener('touchend', handleTouchEnd('ArrowUp'));
+            touchLeft.addEventListener('touchstart', handleTouchStart('ArrowLeft'));
+            touchLeft.addEventListener('touchend', handleTouchEnd('ArrowLeft'));
+            touchRight.addEventListener('touchstart', handleTouchStart('ArrowRight'));
+            touchRight.addEventListener('touchend', handleTouchEnd('ArrowRight'));
+            touchDown.addEventListener('touchstart', handleTouchStart('ArrowDown'));
+            touchDown.addEventListener('touchend', handleTouchEnd('ArrowDown'));
+
+            // También para clics (por si acaso)
+            touchUp.addEventListener('mousedown', handleTouchStart('ArrowUp'));
+            touchUp.addEventListener('mouseup', handleTouchEnd('ArrowUp'));
+            touchLeft.addEventListener('mousedown', handleTouchStart('ArrowLeft'));
+            touchLeft.addEventListener('mouseup', handleTouchEnd('ArrowLeft'));
+            touchRight.addEventListener('mousedown', handleTouchStart('ArrowRight'));
+            touchRight.addEventListener('mouseup', handleTouchEnd('ArrowRight'));
+            touchDown.addEventListener('mousedown', handleTouchStart('ArrowDown'));
+            touchDown.addEventListener('mouseup', handleTouchEnd('ArrowDown'));
+        }
+
+        if (isTouchDevice) {
+            setupTouchControls();
+        }
+
+        // Actualizar posición del robot
+        function updateRobotPosition() {
+            if (isRepairing || hasWon) return;
+            
+            const moveSpeed = 5;
+            const verticalSpeed = 4;
+            
+            if (keysPressed['ArrowLeft'] && robotX > 20) {
+                robotX -= moveSpeed;
+            }
+            if (keysPressed['ArrowRight'] && robotX < window.innerWidth - robotWidth - 20) {
+                robotX += moveSpeed;
+            }
+            if (keysPressed['ArrowUp'] && robotY > 20) {
+                robotY -= verticalSpeed;
+            }
+            if (keysPressed['ArrowDown'] && robotY < window.innerHeight - robotHeight - 20) {
+                robotY += verticalSpeed;
+            }
+            
+            robot.style.left = robotX + 'px';
+            robot.style.top = robotY + 'px';
+        }
+
+        // Crear obstáculos (nubes espaciales)
+        function createObstacle() {
+            if (isGameOver || hasWon) return;
+            
+            const obstacle = document.createElement('div');
+            obstacle.className = 'obstacle';
+            const startX = window.innerWidth + Math.random() * 200;
+            const startY = Math.random() * (window.innerHeight - 150) + 50;
+            obstacle.style.left = startX + 'px';
+            obstacle.style.top = startY + 'px';
+            gameContainer.appendChild(obstacle);
+            
+            obstacles.push({
+                element: obstacle,
+                x: startX,
+                y: startY,
+                width: obstacleWidth,
+                height: obstacleHeight,
+                collisionWidth: obstacleWidth * 0.7,
+                collisionHeight: obstacleHeight * 0.7
+            });
+        }
+
+        // Crear bases de datos (nuevo obstáculo)
+        function createDatabase() {
+            if (isGameOver || hasWon || score < 50) return;
+            
+            const db = document.createElement('div');
+            db.className = 'database';
+            const startX = window.innerWidth + Math.random() * 200;
+            const startY = Math.random() * (window.innerHeight - 120) + 30;
+            db.style.left = startX + 'px';
+            db.style.top = startY + 'px';
+            gameContainer.appendChild(db);
+            
+            databases.push({
+                element: db,
+                x: startX,
+                y: startY,
+                width: databaseWidth,
+                height: databaseHeight,
+                collisionWidth: databaseWidth * 0.8,
+                collisionHeight: databaseHeight * 0.9
+            });
+        }
+
+        // Crear estaciones espaciales de reparación
+        function createRepairStation() {
+            if (isGameOver || hasWon) return;
+            
+            const station = document.createElement('div');
+            station.className = 'repair-station';
+            const startX = window.innerWidth + Math.random() * 400;
+            const startY = Math.random() * (window.innerHeight - 100) + 30;
+            station.style.left = startX + 'px';
+            station.style.top = startY + 'px';
+            gameContainer.appendChild(station);
+            
+            repairStations.push({
+                element: station,
+                x: startX,
+                y: startY,
+                width: repairStationSize,
+                height: repairStationSize
+            });
+        }
+
+        // Crear robots enemigos
+        function createEnemyRobot() {
+            if (isGameOver || hasWon || score < 100) return;
+            
+            const enemy = document.createElement('div');
+            enemy.className = 'enemy-robot';
+            const startX = window.innerWidth + Math.random() * 200;
+            const startY = Math.random() * (window.innerHeight - 100) + 30;
+            enemy.style.left = startX + 'px';
+            enemy.style.top = startY + 'px';
+            gameContainer.appendChild(enemy);
+            
+            enemyRobots.push({
+                element: enemy,
+                x: startX,
+                y: startY,
+                width: enemyRobotWidth,
+                height: enemyRobotHeight,
+                speed: 1 + Math.random() * 2
+            });
+        }
+
+        // Crear frutas TAK (combustible)
+        function createFruit() {
+            if (isGameOver || hasWon) return;
+            
+            const fruit = document.createElement('div');
+            fruit.className = 'fruit';
+            const startX = window.innerWidth + Math.random() * 300;
+            const startY = Math.random() * (window.innerHeight - 100) + 30;
+            fruit.style.left = startX + 'px';
+            fruit.style.top = startY + 'px';
+            gameContainer.appendChild(fruit);
+            
+            fruits.push({
+                element: fruit,
+                x: startX,
+                y: startY,
+                width: fruitSize,
+                height: fruitSize
+            });
+        }
+
+        // Actualizar posición de los elementos
+        function updatePositions() {
+            if (isRepairing || hasWon) return;
+            
+            updateRobotPosition();
+            
+            // Verificar si se alcanzó la meta
+            if (score >= 300 && !hasWon) {
+                victory();
+                return;
+            }
+            
+            // Mover obstáculos
+            obstacles.forEach((obstacle, index) => {
+                obstacle.x -= gameSpeed;
+                obstacle.element.style.left = obstacle.x + 'px';
+                
+                // Eliminar obstáculos que salen de la pantalla
+                if (obstacle.x < -obstacleWidth) {
+                    obstacle.element.remove();
+                    obstacles.splice(index, 1);
+                    score++;
+                    scoreElement.textContent = score;
+                    
+                    // Aumentar dificultad gradualmente
+                    if (score % 5 === 0) {
+                        gameSpeed += 0.15; // Aumento más suave de la dificultad
+                    }
+                }
+                
+                // Detectar colisiones con obstáculos
+                if (checkCollision(
+                    {x: robotX + 10, y: robotY + 10, width: robotWidth - 20, height: robotHeight - 20},
+                    {x: obstacle.x + (obstacle.width - obstacle.collisionWidth)/2, 
+                     y: obstacle.y + (obstacle.height - obstacle.collisionHeight)/2, 
+                     width: obstacle.collisionWidth, 
+                     height: obstacle.collisionHeight}
+                )) {
+                    if (soundEnabled) crashSound.play();
+                    createExplosion(robotX + robotWidth/2, robotY + robotHeight/2);
+                    repair -= 20;
+                    repairLevel.style.width = repair + '%';
+                    obstacle.element.remove();
+                    obstacles.splice(index, 1);
+                    
+                    if (repair <= 0) {
+                        endGame();
+                    } else if (repair < 50 && !needsRepair) {
+                        needsRepair = true;
+                        repairAlert.style.display = 'block';
+                        setTimeout(() => {
+                            repairAlert.style.display = 'none';
+                        }, 5000); // El mensaje se oculta después de 5 segundos
+                    }
+                }
+            });
+            
+            // Mover bases de datos
+            databases.forEach((db, index) => {
+                db.x -= gameSpeed * 1.2;
+                db.element.style.left = db.x + 'px';
+                
+                // Eliminar bases de datos que salen de la pantalla
+                if (db.x < -databaseWidth) {
+                    db.element.remove();
+                    databases.splice(index, 1);
+                    score += 2;
+                    scoreElement.textContent = score;
+                }
+                
+                // Detectar colisiones con bases de datos
+                if (checkCollision(
+                    {x: robotX + 10, y: robotY + 10, width: robotWidth - 20, height: robotHeight - 20},
+                    {x: db.x + (db.width - db.collisionWidth)/2, 
+                     y: db.y + (db.height - db.collisionHeight)/2, 
+                     width: db.collisionWidth, 
+                     height: db.collisionHeight}
+                )) {
+                    if (soundEnabled) crashSound.play();
+                    createExplosion(robotX + robotWidth/2, robotY + robotHeight/2);
+                    repair -= 30;
+                    repairLevel.style.width = repair + '%';
+                    db.element.remove();
+                    databases.splice(index, 1);
+                    
+                    if (repair <= 0) {
+                        endGame();
+                    } else if (repair < 50 && !needsRepair) {
+                        needsRepair = true;
+                        repairAlert.style.display = 'block';
+                        setTimeout(() => {
+                            repairAlert.style.display = 'none';
+                        }, 5000); // El mensaje se oculta después de 5 segundos
+                    }
+                }
+            });
+            
+            // Mover estaciones de reparación
+            repairStations.forEach((station, index) => {
+                station.x -= gameSpeed;
+                station.element.style.left = station.x + 'px';
+                
+                // Eliminar estaciones que salen de la pantalla
+                if (station.x < -repairStationSize) {
+                    station.element.remove();
+                    repairStations.splice(index, 1);
+                }
+                
+                // Detectar colisiones con estaciones de reparación
+                if (checkCollision(
+                    {x: robotX + 15, y: robotY + 15, width: robotWidth - 30, height: robotHeight - 30},
+                    {x: station.x, y: station.y, width: station.width, height: station.height}
+                )) {
+                    if (needsRepair || repair < 100) {
+                        startRepair(station, index);
+                    }
+                }
+            });
+            
+            // Mover robots enemigos
+            enemyRobots.forEach((enemy, index) => {
+                enemy.x -= gameSpeed * enemy.speed;
+                enemy.y += Math.sin(enemy.x / 50) * 2; // Movimiento sinusoidal
+                enemy.element.style.left = enemy.x + 'px';
+                enemy.element.style.top = enemy.y + 'px';
+                
+                // Eliminar robots enemigos que salen de la pantalla
+                if (enemy.x < -enemyRobotWidth) {
+                    enemy.element.remove();
+                    enemyRobots.splice(index, 1);
+                    score += 3;
+                    scoreElement.textContent = score;
+                }
+                
+                // Detectar colisiones con robots enemigos
+                if (checkCollision(
+                    {x: robotX + 10, y: robotY + 10, width: robotWidth - 20, height: robotHeight - 20},
+                    {x: enemy.x, y: enemy.y, width: enemy.width, height: enemy.height}
+                )) {
+                    if (soundEnabled) crashSound.play();
+                    createExplosion(robotX + robotWidth/2, robotY + robotHeight/2);
+                    repair -= 40;
+                    repairLevel.style.width = repair + '%';
+                    enemy.element.remove();
+                    enemyRobots.splice(index, 1);
+                    
+                    if (repair <= 0) {
+                        endGame();
+                    } else if (repair < 50 && !needsRepair) {
+                        needsRepair = true;
+                        repairAlert.style.display = 'block';
+                        setTimeout(() => {
+                            repairAlert.style.display = 'none';
+                        }, 5000); // El mensaje se oculta después de 5 segundos
+                    }
+                }
+            });
+            
+            // Mover frutas (combustible)
+            fruits.forEach((fruit, index) => {
+                fruit.x -= gameSpeed;
+                fruit.element.style.left = fruit.x + 'px';
+                
+                // Eliminar frutas que salen de la pantalla
+                if (fruit.x < -fruitSize) {
+                    fruit.element.remove();
+                    fruits.splice(index, 1);
+                }
+                
+                // Detectar colisiones con frutas
+                if (checkCollision(
+                    {x: robotX + 15, y: robotY + 15, width: robotWidth - 30, height: robotHeight - 30},
+                    {x: fruit.x, y: fruit.y, width: fruit.width, height: fruit.height}
+                )) {
+                    fruit.element.remove();
+                    fruits.splice(index, 1);
+                    fuel = Math.min(100, fuel + 25);
+                    fuelLevel.style.width = fuel + '%';
+                    score += 3;
+                    scoreElement.textContent = score;
+                    
+                    if (soundEnabled) {
+                        fuelSound.currentTime = 0;
+                        fuelSound.play();
+                        voiceExcellent.currentTime = 0;
+                        voiceExcellent.play();
+                    }
+                    
+                    showSpeech("¡Excelente!");
+                    
+                    // Efecto visual al recoger fruta
+                    const effect = document.createElement('div');
+                    effect.style.position = 'absolute';
+                    effect.style.left = fruit.x + 'px';
+                    effect.style.top = fruit.y + 'px';
+                    effect.style.color = '#FFEB3B';
+                    effect.style.fontWeight = 'bold';
+                    effect.style.fontSize = '20px';
+                    effect.style.textShadow = '0 0 5px #FF5722';
+                    effect.textContent = '+TAK!';
+                    effect.style.animation = 'float 1s forwards';
+                    gameContainer.appendChild(effect);
+                    setTimeout(() => effect.remove(), 1000);
+                }
+            });
+        }
+
+        // Pantalla de victoria
+        function victory() {
+            hasWon = true;
+            clearInterval(gameInterval);
+            clearInterval(fuelDecreaseInterval);
+            clearInterval(repairDecreaseInterval);
+            
+            victoryScoreElement.textContent = score;
+            victoryScreen.style.display = 'block';
+            
+            if (soundEnabled) {
+                victorySound.currentTime = 0;
+                victorySound.play();
+                spaceAmbience.pause();
+                engineSound.pause();
+            }
+            
+            // Mostrar mensaje de felicitaciones
+            showSpeech("¡Misión cumplida!", 5000);
+            
+            // Crear efecto de confeti
+            createConfetti();
+        }
+
+        // Crear efecto de confeti
+        function createConfetti() {
+            const colors = ['#FF5252', '#FFEB3B', '#4CAF50', '#2196F3', '#9C27B0'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'absolute';
+                confetti.style.width = '10px';
+                confetti.style.height = '10px';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = Math.random() * window.innerWidth + 'px';
+                confetti.style.top = '-10px';
+                confetti.style.borderRadius = '50%';
+                confetti.style.zIndex = '20';
+                
+                // Animación de caída
+                const animation = confetti.animate([
+                    { top: '-10px', transform: 'rotate(0deg)' },
+                    { top: window.innerHeight + 'px', transform: 'rotate(360deg)' }
+                ], {
+                    duration: 2000 + Math.random() * 3000,
+                    delay: Math.random() * 2000,
+                    iterations: 1
+                });
+                
+                gameContainer.appendChild(confetti);
+                
+                // Eliminar después de la animación
+                animation.onfinish = () => {
+                    confetti.remove();
+                };
+            }
+        }
+
+        // Iniciar reparación
+        function startRepair(station, index) {
+            isRepairing = true;
+            engineSound.pause();
+            
+            if (soundEnabled) {
+                repairSound.currentTime = 0;
+                repairSound.play();
+            }
+            
+            // Mostrar estación siendo usada
+            station.element.style.backgroundImage = 'url(\'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,5 90,30 90,70 50,95 10,70 10,30" fill="%23FFC107" stroke="%23FFEE58" stroke-width="2"/><polygon points="50,25 75,40 75,60 50,75 25,60 25,40" fill="%23FFF59D" opacity="0.8"/><circle cx="50" cy="50" r="15" fill="%23FFEE58"/><path d="M50,35 L60,50 L50,65 L40,50 Z" fill="white"/></svg>\')';
+            
+            setTimeout(() => {
+                repair = 100;
+                repairLevel.style.width = '100%';
+                needsRepair = false;
+                repairAlert.style.display = 'none';
+                isRepairing = false;
+                
+                // Mostrar mensaje después de reparar
+                if (soundEnabled) {
+                    voiceGoodService.currentTime = 0;
+                    voiceGoodService.play();
+                }
+                showSpeech("¡Qué buen servicio!");
+                
+                // Eliminar estación después de usarla
+                station.element.remove();
+                repairStations.splice(index, 1);
+                
+                // Programar próxima necesidad de reparación
+                setTimeout(checkForRepair, 15000 + Math.random() * 30000);
+            }, 3000);
+        }
+
+        // Verificar si necesita reparación
+        function checkForRepair() {
+            if (!isGameOver && !needsRepair && !isRepairing && repair < 80 && !hasWon) {
+                needsRepair = true;
+                repairAlert.style.display = 'block';
+                setTimeout(() => {
+                    repairAlert.style.display = 'none';
+                }, 5000); // El mensaje se oculta después de 5 segundos
+                
+                // Daño progresivo si no se repara
+                const damageInterval = setInterval(() => {
+                    if (!needsRepair || isGameOver || hasWon) {
+                        clearInterval(damageInterval);
+                        return;
+                    }
+                    
+                    repair -= 2;
+                    repairLevel.style.width = repair + '%';
+                    
+                    if (repair <= 0) {
+                        clearInterval(damageInterval);
+                        endGame();
+                    }
+                }, 1000);
+            }
+        }
+
+        // Crear efecto de explosión
+        function createExplosion(x, y) {
+            const explosion = document.createElement('div');
+            explosion.className = 'explosion';
+            explosion.style.left = (x - 50) + 'px';
+            explosion.style.top = (y - 50) + 'px';
+            gameContainer.appendChild(explosion);
+            setTimeout(() => explosion.remove(), 800);
+        }
+
+        // Verificar colisiones
+        function checkCollision(obj1, obj2) {
+            return (
+                obj1.x < obj2.x + obj2.width &&
+                obj1.x + obj1.width > obj2.x &&
+                obj1.y < obj2.y + obj2.height &&
+                obj1.y + obj1.height > obj2.y
+            );
+        }
+
+        // Disminuir combustible
+        function decreaseFuel() {
+            if (isGameOver || isRepairing || hasWon) return;
+            
+            fuel -= 1;
+            fuelLevel.style.width = fuel + '%';
+            
+            if (fuel <= 0) {
+                if (soundEnabled) crashSound.play();
+                createExplosion(robotX + robotWidth/2, robotY + robotHeight/2);
+                endGame();
+            }
+        }
+
+        // Terminar el juego
+        function endGame() {
+            if (isGameOver || hasWon) return;
+            
+            isGameOver = true;
+            clearInterval(gameInterval);
+            clearInterval(fuelDecreaseInterval);
+            clearInterval(repairDecreaseInterval);
+            
+            finalScoreElement.textContent = score;
+            gameOverScreen.style.display = 'block';
+            
+            // Ocultar robot y detener sonidos
+            robot.style.opacity = '0';
+            engineSound.pause();
+            spaceAmbience.pause();
+        }
+
+        // Reiniciar el juego
+        function restartGame() {
+            // Limpiar elementos
+            obstacles.forEach(obstacle => obstacle.element.remove());
+            databases.forEach(db => db.element.remove());
+            repairStations.forEach(station => station.element.remove());
+            enemyRobots.forEach(enemy => enemy.element.remove());
+            fruits.forEach(fruit => fruit.element.remove());
+            
+            // Reiniciar variables
+            obstacles = [];
+            databases = [];
+            repairStations = [];
+            enemyRobots = [];
+            fruits = [];
+            score = 0;
+            fuel = 100;
+            repair = 100;
+            gameSpeed = 2;
+            isGameOver = false;
+            isRepairing = false;
+            needsRepair = false;
+            hasWon = false;
+            
+            // Actualizar UI
+            scoreElement.textContent = score;
+            fuelLevel.style.width = '100%';
+            repairLevel.style.width = '100%';
+            gameOverScreen.style.display = 'none';
+            victoryScreen.style.display = 'none';
+            repairAlert.style.display = 'none';
+            speechBubble.style.opacity = '0';
+            
+            // Restaurar robot
+            robot.style.opacity = '1';
+            robotX = 100;
+            robotY = window.innerHeight / 2;
+            robot.style.left = robotX + 'px';
+            robot.style.top = robotY + 'px';
+            
+            // Reiniciar intervalos
+            gameInterval = setInterval(updatePositions, 20);
+            fuelDecreaseInterval = setInterval(decreaseFuel, 300);
+            
+            // Programar primera necesidad de reparación
+            setTimeout(checkForRepair, 20000 + Math.random() * 20000);
+            
+            // Iniciar sonidos
+            if (soundEnabled) {
+                spaceAmbience.volume = 0.3;
+                spaceAmbience.play();
+            }
+        }
+
+        // Eventos para reiniciar
+        restartBtn.addEventListener('click', restartGame);
+        victoryRestartBtn.addEventListener('click', restartGame);
+
+        // Iniciar el juego
+        function startGame() {
+            gameInterval = setInterval(updatePositions, 20);
+            setInterval(createObstacle, 1000); // Más nubes (intervalo reducido de 1500 a 1000)
+            setInterval(createDatabase, 1500); // Más bases de datos (intervalo reducido de 2000 a 1500)
+            setInterval(createRepairStation, 10000);
+            setInterval(createEnemyRobot, 2000); // Más robots enemigos (intervalo reducido de 2500 a 2000)
+            setInterval(createFruit, 1800);
+            fuelDecreaseInterval = setInterval(decreaseFuel, 300);
+            
+            // Programar primera necesidad de reparación
+            setTimeout(checkForRepair, 20000 + Math.random() * 20000);
+            
+            // Iniciar sonido ambiental
+            if (soundEnabled) {
+                spaceAmbience.volume = 0.3;
+                spaceAmbience.play();
+            }
+        }
+
+        startGame();
+
+        // Ajustar tamaño en redimensionamiento
+        window.addEventListener('resize', () => {
+            if (!isGameOver && !hasWon) {
+                robotX = Math.min(Math.max(20, robotX), window.innerWidth - robotWidth - 20);
+                robotY = Math.min(Math.max(20, robotY), window.innerHeight - robotHeight - 20);
+                robot.style.left = robotX + 'px';
+                robot.style.top = robotY + 'px';
+            }
+        });
+    </script>
+</body>
+</html>
